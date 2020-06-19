@@ -24,7 +24,7 @@ Configuration for IntelliJ or Android Studio:
 
 Example usage via command line:
 ```
-C:\tools\relative_imports.exe -p C:\projects\my_project\pubspec.yaml -f myfilename -y
+C:\tools\relative_imports.exe -p C:\projects\my_project\pubspec.yaml -f MyFilenameWithoutExtension -y
 ```
 
 ### Arguments:  
@@ -37,6 +37,13 @@ C:\tools\relative_imports.exe -p C:\projects\my_project\pubspec.yaml -f myfilena
 ```
 
 #### Notes:  
-To help with cross-platform compatibility glob was used for file matching and there was issue on Windows trying to pass the absolute path of the intended target file in which the imports were to be converted. Due to this, just the filename without the .dart extension is passed in using the projectroot/lib folder as the working directory. It has been working well doing it this way, but I am not sure if it will become an issue with very projects. If so, I will go about it a different way and make sure that the direct path to the intended target file is used instead of matching by filename.
+To help with cross-platform compatibility, glob is used for file matching and there was issue on Windows trying to 
+pass the absolute path of the intended target file in which the imports were to be converted. Due to this, 
+just the filename without the .dart extension is passed in using the projectroot/lib folder as 
+the working directory.   
+
+Doing it this way has been working well, but I am not sure if it will become an issue with very large projects 
+with hundreds/thousands of files. If so, I will go about it a different way and make sure the direct path to the 
+intended target file is used, instead of matching by filename.
 
 ![alt text](https://i.imgur.com/cg5ow2M.png "instance.id")
