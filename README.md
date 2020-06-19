@@ -1,6 +1,8 @@
 # relative_imports
 
-An IDE agnostic tool to automatically convert your projects dart/flutter imports to relative imports.  
+An IDE agnostic tool to automatically convert your projects dart/flutter imports to relative imports.   
+
+If your IDE can perform "on-save" actions, macros, or hotkey triggered commands to the terminal with arguments, you should be able to automate on save, just as you would with dartfmt.  
 
  
 Your import may go from something like this:
