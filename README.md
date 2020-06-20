@@ -1,6 +1,7 @@
-Setup/Usage: [ IntelliJ](#setup) | [VSCode](#configuration-for-vscode) | [CLI](#example-usage-via-command-line) | [Arguments](#arguments)
-
 # relative_imports
+---
+[ IntelliJ](#setup) | [VSCode](#configuration-for-vscode) | [CLI](#example-usage-via-command-line) | [Arguments](#arguments)
+
 
 An IDE agnostic tool to automatically convert your Flutter/Dart projects self-package (package:myproject) imports to relative imports (../myfiles.dart).   
 
