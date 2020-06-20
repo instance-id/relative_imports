@@ -1,27 +1,29 @@
+Setup/Usage: [ IntelliJ](#setup) | [VSCode](#configuration-for-vscode) | [CLI](#example-usage-via-command-line) | [Arguments](#arguments)
+
 # relative_imports
 
 An IDE agnostic tool to automatically convert your Flutter/Dart projects self-package (package:myproject) imports to relative imports (../myfiles.dart).   
 
 If your IDE can perform "on-save" actions, macros, or hotkey triggered commands to the terminal with arguments, you should be able to automate on save, just as you would with dartfmt.  
 
- 
+
 If, when your IDE automatically adds imports to your local project files, they are brought in as package imports like this:
 ```dart
 import 'package:relative_imports/file1.dart';
 import 'package:relative_imports/folder1/file2.dart';
 import 'package:relative_imports/folder2/file3.dart';
- ```
+```
 They will be converted to the proper local relative imports like this:
 ```dart
 import 'file1.dart';
 import 'folder1/file2.dart';
 import '../folder2/file3.dart';
- ```
+```
 
 ---
-## Examples:  
-### **Configuration for IntelliJ or Android Studio:**
 
+## Setup:  
+### **<a name="setup-intellij">Configuration for IntelliJ or Android Studio:</a>**
 Press ```ctrl+alt+s``` to bring up the settings menu.
 Since it can be located in different menus between IDE's, type "external tools", and then select it in the menu below.
 
@@ -45,9 +47,9 @@ Within the previously used settings menu, locate the Keymap section, and in the 
 
 Once these steps have been completed, you should be able to now, upon having a .dart file open and focused, hit the hotkey and if there are any imports present that are elidgable to convertion to relative imports, they will be.
 
----  
+---
 
-### **Configuration for VSCode:**
+## **Configuration for VSCode**
 
 Either press ```ctrl+alt+shift+s ``` to bring up the "Configure Tasks" menu
 or go to the Terminal menu and select it.
@@ -62,7 +64,7 @@ Select "Others Example to run from arbitrary external command"
 
 In the newly created task.json file, paste the configuration below, and then make any adjustments necessary to match your local environment or preferences.
 
-```json
+```json5
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
@@ -104,10 +106,10 @@ Lastly, you can now trigger the task as you wish, such as creating a new keybind
         "key": "ctrl+alt+;",
         "command": "workbench.action.tasks.runTask",
         "args": "flutter_relative_imports"
-    },
+    }
 ```
 
-## Example usage via command line:
+## Example usage via command line
 ```
 C:\tools\relative_imports.exe -p C:\projects\my_project\pubspec.yaml -f C:\projects\my_project\lib\myfile.dart -y
 ```
