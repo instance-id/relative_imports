@@ -113,7 +113,8 @@ C:\tools\relative_imports.exe -p C:\projects\my_project\pubspec.yaml -f C:\proje
 ```  
   
 ---  
-## Arguments: ```  
+## Arguments: 
+```  
  file-name        (-f)  The path the .dart file in which to convert imports to relative  
  directory-path   (-d) 1) Project root directory (1 or 2 Required)  
  pubspec-location (-p) 2) The path to your projects pubspec.yaml (1 or 2 Required)  
