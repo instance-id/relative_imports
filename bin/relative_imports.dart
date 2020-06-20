@@ -5,7 +5,7 @@
 -- https://github.com/instance-id/relative_imports --
 -----------------------------------------------------
  */
-import 'dart:io' as io;
+import 'dart:io';
 import 'package:glob/glob.dart';
 
 import 'package:args/args.dart';
@@ -14,36 +14,26 @@ import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:source_span/source_span.dart';
+import 'package:dartx/dartx_io.dart';
 
-const fileName = 'file-name';
+const fileLocation = 'file-location';
 const directoryPath = 'directory-path';
 const pubspecLocation = 'pubspec-location';
 const autoApply = 'auto-apply';
 const verbose = 'verbose';
-
 const pubspecFileName = 'pubspec.yaml';
 
-// -----------------------------------------------------------------
-// -- Set up logging parameters                                   --
-Logger log = Logger(
-    level: Level.debug,
-    printer: PrettyPrinter(
-      methodCount: 0,
-      errorMethodCount: 55,
-      lineLength: 100,
-      colors: io.stdout.supportsAnsiEscapes,
-      printEmojis: false,
-      printTime: true,
-    ));
-
+Logger log;
 ArgResults argResults;
 String projectRoot;
-String filePath;
+File filePath;
 String libPath;
-io.File pubspecFile;
+File pubspecFile;
 RegExp pattern;
 Pubspec project;
 
+// -----------------------------------------------------------------
+// -- Set up logging parameters                                   --
 void setupLogger(Level logLevel) {
   log = Logger(
       level: logLevel,
@@ -51,66 +41,71 @@ void setupLogger(Level logLevel) {
         methodCount: 0,
         errorMethodCount: 55,
         lineLength: 100,
-        colors: io.stdout.supportsAnsiEscapes,
+        colors: stdout.supportsAnsiEscapes,
         printEmojis: false,
         printTime: true,
       ));
 }
 
+const pubSpecNotFound = 'pubspec.yaml could not be found. \n Ensure you are either passing in your '
+    'the absolute path to the file, or the path to your projects root directory to the $pubspecLocation (-p) flag.\n '
+    '(ex. -p path/to/project/pubspec.yaml) or (ex. -p path/to/project) \n';
+
+// -----------------------------------------------------------------
+// -- Pubspec file was included path                              --
+// -- Split path into segments, remove pubspec.yaml               --
+// -- from path list, recombine path segments                     --
+// -- then assign to project root                                 --
+Future<File> _pubspecInPath(String pPath) async {
+  var splitPath = p.split(pPath);
+  splitPath.removeLast();
+  projectRoot = p.joinAll(splitPath);
+  return File(p.join(pPath));
+}
+
+// -----------------------------------------------------------------
+// -- Pubspec file was not included path                          --
+// -- If path doesn't contains 'pubspec.yaml' then                --
+// -- assign the project path, add pubspec.yaml                   --
+// -- and assign to pubspecFile                                   --
+Future<File> _pubspecNotInPath(String pPath) async {
+  projectRoot = pPath;
+  return File(p.join(projectRoot, pubspecFileName));
+}
+
+// If provided path is null, check if pubspec.yaml        --
+// exists in the current directory                        --
 // -----------------------------------------------------------------
 // -- Get details about the current project                       --
 Future<dynamic> _getPackageInfo({String pPath}) async {
   log.d('Argument Path: ${pPath}');
-  (pPath != null) // Check again if provided path contains data   --
-      // Path already contains pubspec?                           --
-      ? (pPath.contains(pubspecFileName))
-          ? () {
-              // If so, assign pubspec path                       --
-              pubspecFile = io.File(p.join(pPath));
+  try {
+    (pPath != null)
+        ? (pPath.contains(pubspecFileName))
+            ? pubspecFile = await _pubspecInPath(pPath)
+            : pubspecFile = await _pubspecNotInPath(pPath)
+        : pubspecFile = File(p.join(Directory.current.path, pubspecFileName));
 
-              // Split path into segments, remove pubspec.yaml    --
-              // from path list, recombine path segments          --
-              // then assign to project root                      --
-              var splitPath = p.split(pPath);
-              splitPath.removeLast();
-              projectRoot = p.joinAll(splitPath);
-            }()
-          : () {
-              // If path doesn't contains 'pubspec.yaml' then     --
-              // assign the project path, add pubspec.yaml        --
-              // and assign to pubspecFile                        --
-              projectRoot = pPath;
-              pubspecFile = io.File(p.join(projectRoot, pubspecFileName));
-            }()
-      // If provided path is null, check if pubspec.yaml          --
-      // exists in the current working directory                  --
-      : pubspecFile = io.File(p.join(io.Directory.current.path, pubspecFileName));
+  } on Exception catch (e) {
+    log.e('${e.toString()}: $pubSpecNotFound');
+    return;
+  }
 
-  pubspecFile ??
-      () {
-        log.e('pubspec.yaml could not be found. Make sure you are either passing in your '
-            'projects root directory, or using it as your projects current working directory.');
-        return;
-      }();
-
-  log.d('pubspecFile: ${pubspecFile}');
   projectRoot = projectRoot.replaceAll(RegExp(r'\\'), '/');
-  log.d('projectRoot: ${projectRoot}');
-
   return Pubspec.parse(await pubspecFile.readAsString());
 }
 
 void main(List<String> arguments) async {
-  io.exitCode = 0;
+  exitCode = 0;
 
   // ---------------------------------------------------------------
   // -- Possible arguments to be accepted                         --
   final parser = ArgParser()
     ..addOption(
-      fileName,
+      fileLocation,
       defaultsTo: null,
       abbr: 'f',
-      help: 'The name of the .dart file in which to convert imports to relative',
+      help: 'The path of the .dart file in which to convert imports to relative',
     )
     ..addOption(
       directoryPath,
@@ -142,42 +137,59 @@ void main(List<String> arguments) async {
   // -- Parse Arguments passed from command line                  --
   argResults = parser.parse(arguments);
   setupLogger((argResults[verbose]) ? Level.debug : Level.warning);
+
   // ---------------------------------------------------------------
   // If project root is not provided, use pubspec file location   --
   final usePath = argResults[directoryPath] ?? argResults[pubspecLocation];
-  log.d('usePath: ${usePath}');
+  log.d('Provided Path: ${usePath}');
 
   // ---------------------------------------------------------------
   // -- Determine if necessary arguments were provided, if not,   --
   // -- return error message                                      --
   if (usePath == null) {
-    log.w('Either Directory Path (-d) or Pubspec Path (-p) required');
+    log.e('Either Directory Path (-d) or Pubspec Path (-p) required');
     return;
   }
-  if (argResults[fileName] == null) {
-    log.w('Filename (-f) in which to convert import paths is required');
+  if (argResults[fileLocation] == null) {
+    log.e('Filename (-f) in which to convert import paths is required');
     return;
+  } else {
+    try {
+      filePath = await File(argResults[fileLocation]);
+    } on Exception catch (e) {
+      log.e('File Error: ${e.toString()}');
+    }
   }
-
-  filePath = argResults[fileName];
 
   // ---------------------------------------------------------------
   // -- Using provided arguments, determine project name          --
   // -- which will be used to locate package imports              --
-  project = await _getPackageInfo(pPath: usePath);
-
+  try {
+    project = await _getPackageInfo(pPath: usePath);
+  } on Exception catch (e) {
+    log.e('${pubSpecNotFound} System Error Message: ${e.toString()}');
+    return;
+  }
   // ---------------------------------------------------------------
   // Regex pattern used to locate package imports                 --
   // https://github.com/luanpotter/vscode-dart-import/blob/fb7861b8e2d04e9d5f71e67fa21a1733463d3a96/src/main.ts#L50
-  pattern = RegExp('''^\\s*import\\s*(['"])package:${project.name}/([^'"]*)['"]([^;]*);\\s*\$''', multiLine: true);
+  pattern = RegExp(
+      '''^\\s*import\\s*(['"])package:${project.name}/([^'"]*)['"]([^;]*);\\s*\$''',
+      multiLine: true
+  );
+  log.d('Project: ${project.name}');
+
 
   // ---------------------------------------------------------------
   // -- Get file path as Glob so as to help with cross platform   --
   // -- compatibility                                             --
   libPath = p.join(projectRoot, 'lib');
-  final dartFile = Glob('**$filePath.dart', caseSensitive: true, context: p.Context(style: p.Style.windows, current: libPath));
+  log.d('Library Location: ${libPath}');
+  final dartFile = Glob('**${filePath.nameWithoutExtension}.dart', caseSensitive: true, context: p.Context(style: p.Style.windows, current: libPath));
 
-  io.exitCode = runInteractiveCodemod(
+  // ---------------------------------------------------------------
+  // -- Using CodeMod package to make and apply patches to code   --
+  exitCode = runInteractiveCodemod(
     filePathsFromGlob(dartFile),
     RegexSubstituter(),
     // If -y flag was passed auto apply all changes               --
@@ -186,7 +198,7 @@ void main(List<String> arguments) async {
 }
 
 // -----------------------------------------------------------------
-// -- Using CodeMod package to make and apply patches to code     --
+// -- Run file matching and code replacements                     --
 class RegexSubstituter implements Suggestor {
   @override
   bool shouldSkip(String sourceFileContents) => false;
@@ -194,7 +206,7 @@ class RegexSubstituter implements Suggestor {
   @override
   Iterable<Patch> generatePatches(SourceFile sourceFile) sync* {
     final contents = sourceFile.getText(0);
-    log.d('Contents: ${contents}');
+
     for (final match in pattern.allMatches(contents)) {
       final line = match.group(0);
       final constraint = match.group(2);
@@ -202,6 +214,7 @@ class RegexSubstituter implements Suggestor {
         (p.join(libPath, constraint)),
         from: sourceFile.url.toFilePath(),
       )}';";
+
       final fixDelimiter = newPath.replaceAll(RegExp(r'\\'), '/');
       final fixRelative = fixDelimiter.replaceFirst('../', '');
       final updated = line.replaceFirst(line, fixRelative);

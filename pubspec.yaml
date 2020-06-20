@@ -14,6 +14,7 @@ dependencies:
   codemod: ^0.2.0
   logger: ^0.9.1
   pubspec_parse: ^0.1.5
+  dartx: ^0.4.2
 
 dev_dependencies:
   pedantic: ^1.9.0
