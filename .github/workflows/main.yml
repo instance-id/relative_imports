@@ -14,7 +14,7 @@ jobs:
           - os: macOS-latest
             output-name: relative_imports_mac
           - os: windows-latest
-            output-name: relative_imports_win
+            output-name: relative_imports.exe
     steps:
       - uses: actions/checkout@v1
       - uses: DanTup/gh-actions/setup-dart@master
