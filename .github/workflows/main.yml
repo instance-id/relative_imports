@@ -1,4 +1,4 @@
-name: Build on Tag
+name: Build from Button
 on:
   repository_dispatch:
     types: [build_executables]
