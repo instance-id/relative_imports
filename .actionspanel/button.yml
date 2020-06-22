@@ -1,0 +1,4 @@
+buttons:
+  - title: Build Executables
+    action: "build_executables"
+    description: Build the executables for Linux, Mac, and Windows

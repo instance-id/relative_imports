@@ -1,0 +1,26 @@
+name: Build on Tag
+on:
+  repository_dispatch:
+    types: [build_executables]
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        include:
+          - os: ubuntu-latest
+            output-name: relative_imports
+          - os: macOS-latest
+            output-name: relative_imports
+          - os: windows-latest
+            output-name: relative_imports.exe
+    steps:
+      - uses: actions/checkout@v1
+      - uses: DanTup/gh-actions/setup-dart@master
+      - run: mkdir build
+      - run: dart2native bin/relative_imports.dart -v -o build/${{ matrix.output-name }}
+      - uses: actions/upload-artifact@v1
+        with:
+          name: relative_imports
+          path: build
