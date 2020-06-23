@@ -1,6 +1,8 @@
 # relative_imports
+![Build](https://github.com/instance-id/relative_imports/workflows/Build/badge.svg) [![Actions Panel](https://img.shields.io/badge/actionspanel-enabled-brightgreen)](https://www.actionspanel.app/app/instance-id/relative_imports)
+
 ---
-[ IntelliJ](#setup) | [VSCode](#configuration-for-vscode) | [CLI](#example-usage-via-command-line) | [Arguments](#arguments) | 
+[ IntelliJ](#setup) | [VSCode](#configuration-for-vscode) | [CLI](#example-usage-via-command-line) | [Arguments](#arguments) |  
 
 
 An IDE agnostic tool to automatically convert your Flutter/Dart projects self-package (package:myproject) imports to relative imports (../myfiles.dart).   
@@ -136,6 +138,5 @@ intended target file is used, instead of matching by filename.
 
 I will also be doing some "best-practice" refactoring.
 
-[![Actions Panel](https://img.shields.io/badge/actionspanel-enabled-brightgreen)](https://www.actionspanel.app/app/instance-id/relative_imports)
 
 ![alt text](https://i.imgur.com/cg5ow2M.png "instance.id")
