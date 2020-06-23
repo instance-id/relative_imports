@@ -185,7 +185,7 @@ void main(List<String> arguments) async {
   // -- compatibility                                             --
   libPath = p.join(projectRoot, 'lib');
   log.d('Library Location: ${libPath}');
-  final dartFile = Glob('**${filePath.nameWithoutExtension}.dart', caseSensitive: true, context: p.Context(style: p.Style.windows, current: libPath));
+  final dartFile = Glob('**${filePath.nameWithoutExtension}.dart', caseSensitive: true, context: p.Context(style: (p.Style.platform.name == 'windows') ? p.Style.windows : p.Style.posix, current: libPath));
 
   // ---------------------------------------------------------------
   // -- Using CodeMod package to make and apply patches to code   --
